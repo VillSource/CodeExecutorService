@@ -6,3 +6,15 @@ services:
     build:
       context: .
       dockerfile: CodeExecutorService/Dockerfile
+
+  python-slave:
+    image: python-slave
+    build:
+      context: ./CompilerContainer
+      dockerfile: Python.Dockerfile
+    ports:
+      - '2222:2222'
+    volumes:
+      - ./CompilerContainer/Keys:/config/.ssh
+      - ./CompilerContainer/SourceCode:/config/sourcecode
+    

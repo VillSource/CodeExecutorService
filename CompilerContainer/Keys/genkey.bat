@@ -1,0 +1,1 @@
+ssh-keygen -f %cd%\authorized_keys -b 2048 -t rsa -q -N ""

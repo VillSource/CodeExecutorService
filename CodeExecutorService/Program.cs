@@ -1,4 +1,5 @@
 using CodeExecutorService.Hubs;
+using CodeExecutorService.SubProcess;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,12 +11,16 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 
+// Add my Service
+builder.Services.AddSingleton(SubProcessIOHandelService.Instance);
+
 // Add dev Cors
 builder.Services.AddCors(options => options
     .AddPolicy("dev", policyBuilder => policyBuilder
+        .WithOrigins("http://localhost:4200")
         .AllowAnyHeader()
         .AllowAnyMethod()
-        .AllowAnyOrigin()
+        .AllowCredentials()
     )
 );
 
