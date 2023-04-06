@@ -364,7 +364,9 @@ FodyWeavers.xsd
 
 
 # Compiler Container Docker
-CompilerContainer/SourceCode/*/**
+CompilerContainer/SourceCode/*
+!CompilerContainer/SourceCode/.*
 
 # Keys
 **/Keys/id_*
+**/Keys/authorized_*

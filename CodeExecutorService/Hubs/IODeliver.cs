@@ -19,7 +19,8 @@ namespace CodeExecutorService.Hubs
         }
 
         public void ProcessOutput(string connectionID, string line) {
-            Clients.Clients(connectionID).SendAsync("processoutput",line).Wait();
+            //Clients.Clients(connectionID).SendAsync("processoutput",line).Wait();
+            Clients.All.SendAsync("processoutput", line).Wait();
         }
 
         public void UserInput(string line) {

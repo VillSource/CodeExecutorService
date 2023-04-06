@@ -31,6 +31,7 @@ namespace CodeExecutorService.SubProcess
             }
         }
 
+
         private void Push(string key, Process process) {
             lock (syncRoot)
             {
@@ -64,7 +65,7 @@ namespace CodeExecutorService.SubProcess
                 }
             }
         }
-        public Process NewProcess(string connectionID,ProcessStartInfo startInfo)
+        public Process NewProcess(string connectionID,ProcessStartInfo startInfo, Action<string> action )
         {
             Delete(connectionID);
             // Redirect the input, output, and error streams
@@ -84,11 +85,11 @@ namespace CodeExecutorService.SubProcess
             process.StartInfo = startInfo;
 
             Push(connectionID, process);
-            WatchProcessOutPut(connectionID);
+            WatchProcessOutPut(connectionID,action);
             return process;
         }
 
-        private void WatchProcessOutPut(string connnectionID)
+        private void WatchProcessOutPut(string connnectionID,Action<string> action)
         {
             Process? process = Get(connnectionID);
             if (process == null)
@@ -98,18 +99,16 @@ namespace CodeExecutorService.SubProcess
 
             process.Start();
 
-            //StreamReader outputReader = process.StandardOutput;
+            StreamReader outputReader = process.StandardOutput;
             StreamReader errorReader = process.StandardError;
 
             Thread outputThread = new Thread(() =>
             {
-                //while (!outputReader.EndOfStream)
-                while (!process.StandardOutput.EndOfStream)
+                while (!outputReader.EndOfStream)
                 {
-                    //char line = (char)outputReader.Read();
-                    //string line = outputReader.ReadLine()!;
-                    char line = (char)process.StandardOutput.Read()!;
-                    //processOutput(connnectionID, $"{line}");
+                    char line = (char)outputReader.Read();
+                    action($"{line}");
+                    //Console.WriteLine(SendOutPut);
                     Console.Write(line);
                 }
             });
@@ -120,7 +119,8 @@ namespace CodeExecutorService.SubProcess
                 while (!errorReader.EndOfStream)
                 {
                     char line = (char)errorReader.Read();
-                    //processOutput(connnectionID, $"{line}");
+                    //SendOutPut.Invoke(connnectionID, $"> {line}");
+                    action($"{line}");
                     Console.Error.Write(line);
                 }
             });

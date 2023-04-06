@@ -1,7 +1,9 @@
-﻿using CodeExecutorService.Models;
+﻿using CodeExecutorService.Hubs;
+using CodeExecutorService.Models;
 using CodeExecutorService.SubProcess;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using System.Diagnostics;
 using System.Text;
 
@@ -12,10 +14,16 @@ namespace CodeExecutorService.Controllers
     public class RunController : ControllerBase
     {
         private readonly SubProcessIOHandelService _allProcess;
+        private readonly IHubContext<IODeliver> _hubContext;
 
-        public RunController(SubProcessIOHandelService allProcess)
+        public RunController
+        (
+            SubProcessIOHandelService allProcess, 
+            IHubContext<IODeliver> hubContext
+        )
         {
-            _allProcess = allProcess;
+            _allProcess = allProcess; 
+            _hubContext = hubContext;
         }
 
         [HttpPost]
@@ -29,7 +37,7 @@ namespace CodeExecutorService.Controllers
             startInfo.Arguments = $"anirut@python-slave python sourcecode/py.py";
 
             _allProcess
-                .NewProcess(connectionID, startInfo)
+                .NewProcess(connectionID, startInfo, output => { ProcessOutput(connectionID, output); })
                 .WaitForExit();
 
             return Ok(new
@@ -55,6 +63,14 @@ namespace CodeExecutorService.Controllers
                 writer.Write(content);
             }
         }
+
+        public void ProcessOutput(string connectionID, string line) {
+            //Clients.Clients(connectionID).SendAsync("processoutput",line).Wait();
+            //Clients.All.SendAsync("processoutput", line).Wait();
+            Console.WriteLine($"send to {connectionID} : {line}");
+            _hubContext.Clients.Client(connectionID).SendAsync("processoutput",line);
+        }
+
 
     }
 }
