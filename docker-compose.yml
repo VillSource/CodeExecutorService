@@ -17,4 +17,5 @@ services:
     volumes:
       - ./CompilerContainer/Keys:/config/.ssh
       - ./CompilerContainer/SourceCode:/config/sourcecode
+    restart: always
     
