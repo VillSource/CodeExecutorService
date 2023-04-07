@@ -4,7 +4,7 @@
     <ProjectVersion>2.1</ProjectVersion>
     <DockerTargetOS>Linux</DockerTargetOS>
     <ProjectGuid>7f819498-b3e7-44c2-b0a5-1dd7ea01bb7b</ProjectGuid>
-    <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
+    <DockerLaunchAction>None</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}/swagger</DockerServiceUrl>
     <DockerServiceName>codeexecutorservice</DockerServiceName>
   </PropertyGroup>
@@ -14,5 +14,12 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="CompilerContainer\*" />
+    <None Include="CompilerContainer\Keys\*" />
+    <None Include="CompilerContainer\SourceCode\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="CompilerContainer\Keys\" />
+    <Folder Include="CompilerContainer\SourceCode\" />
   </ItemGroup>
 </Project>
