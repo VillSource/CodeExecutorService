@@ -3,10 +3,10 @@ using System.Text;
 
 namespace CodeExecutorService.SubProcess
 {
-    public class SubProcessIOHandelService
+    public sealed class SubProcessIOHandelService
     {
         private static volatile SubProcessIOHandelService instance;
-        private static object syncRoot = new object();
+        private static object syncRoot = new ();
 
         private Dictionary<string, Process> ActivedProcess;
 
