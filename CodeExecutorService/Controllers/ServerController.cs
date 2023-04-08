@@ -29,8 +29,7 @@ namespace CodeExecutorService.Controllers
             languages = new List<Language>()
             { 
                 new("Python"),
-                new("C#"),
-                new("JavaScript"),
+                new("Shell"),
             };
             return Ok(languages);
         }

@@ -1,4 +1,4 @@
-﻿using CodeExecutorService.SubProcess;
+﻿using CodeExecutorService.Services.ProcessManagers.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 
 namespace CodeExecutorService.Hubs
@@ -6,25 +6,24 @@ namespace CodeExecutorService.Hubs
     public class IODeliver : Hub
     {
         private readonly ILogger<IODeliver> _logger;
-        private readonly SubProcessIOHandelService subProcessIOHandelService;
+        private readonly IProcessManagerService _processManagerService;
 
         public IODeliver
         (
             ILogger<IODeliver> logger,
-            SubProcessIOHandelService spioService
+            IProcessManagerService processManagerService
         )
         {
             _logger = logger;
-            subProcessIOHandelService = spioService;
+            _processManagerService = processManagerService;
         }
 
         public void ProcessOutput(string connectionID, string line) {
-            //Clients.Clients(connectionID).SendAsync("processoutput",line).Wait();
             Clients.All.SendAsync("processoutput", line).Wait();
         }
 
         public void UserInput(string line) {
-            subProcessIOHandelService.WriteLine(Context.ConnectionId, line);
+            _processManagerService.WriteLineToProcess(Context.ConnectionId, line);
         }
 
         public override Task OnConnectedAsync()
