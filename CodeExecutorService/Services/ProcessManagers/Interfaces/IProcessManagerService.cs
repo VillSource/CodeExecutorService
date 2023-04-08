@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace CodeExecutorService.Services.Interfaces
+namespace CodeExecutorService.Services.ProcessManagers.Interfaces
 {
     public interface IProcessManagerService
     {
@@ -19,7 +19,7 @@ namespace CodeExecutorService.Services.Interfaces
         /// </summary>
         /// <param name="processID">Create new process with this id</param>
         /// <param name="startInfo">Prosess infomatoin</param>
-        void AddNewProcess ( string processID, ProcessStartInfo startInfo );
+        void AddNewProcess(string processID, ProcessStartInfo startInfo);
 
         /// <summary>
         /// Start process by process ID.
@@ -28,14 +28,15 @@ namespace CodeExecutorService.Services.Interfaces
         /// <param name="processID">Process ID to start</param>
         /// <param name="onOutput">Action to inwoke</param>
         /// <param name="onError"></param>
-        void StartProcess ( string processID, Action<char>? onOutput = null, Action<char>? onError = null, Action<StreamWriter>? sendInput =null );
+        /// <param name="sendInput"></param>
+        void StartProcess(string processID, Action<char>? onOutput = null, Action<char>? onError = null, Action<StreamWriter>? sendInput = null);
 
         /// <summary>
         /// Write input to a process
         /// </summary>
         /// <param name="processID">Process ID to write line</param>
         /// <param name="line">Data to write to process</param>
-        void WritLineToProcess(string processID, string line);
+        void WriteLineToProcess(string processID, string line);
 
         /// <summary>
         /// Kill process if exist
@@ -49,6 +50,6 @@ namespace CodeExecutorService.Services.Interfaces
         /// </summary>
         /// <returns>true if all process is killed otherwise false</returns>
         bool KillAllProcess();
-        
+
     }
 }
