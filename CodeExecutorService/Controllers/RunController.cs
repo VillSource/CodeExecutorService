@@ -1,11 +1,9 @@
 ﻿using CodeExecutorService.Hubs;
 using CodeExecutorService.Models;
-using CodeExecutorService.SubProcess;
-using Microsoft.AspNetCore.Http;
+using CodeExecutorService.Services.CodeRunners.Interfaces;
+using CodeExecutorService.Services.FileSavers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
-using System.Diagnostics;
-using System.Text;
 
 namespace CodeExecutorService.Controllers
 {
@@ -13,64 +11,29 @@ namespace CodeExecutorService.Controllers
     [ApiController]
     public class RunController : ControllerBase
     {
-        private readonly SubProcessIOHandelService _allProcess;
+        private readonly IFileSaverFactory _fileSaverFactory;
+        private readonly ICodeRunnerFactory _codeRunnerFactory;
         private readonly IHubContext<IODeliver> _hubContext;
 
-        public RunController
-        (
-            SubProcessIOHandelService allProcess, 
-            IHubContext<IODeliver> hubContext
-        )
+        public RunController(IFileSaverFactory fileSaverFactory, ICodeRunnerFactory codeRunnerFactory, IHubContext<IODeliver> hubContext)
         {
-            _allProcess = allProcess; 
+            _fileSaverFactory = fileSaverFactory;
+            _codeRunnerFactory = codeRunnerFactory;
             _hubContext = hubContext;
         }
 
         [HttpPost]
-        public IActionResult Run([FromQuery] string connectionID,[FromForm] CodeInfo codeInfo)
+        public ActionResult RunCode([FromQuery] string connectionID, [FromForm] CodeInfo codeInfo)
         {
-            Savefile(codeInfo.Code);
+            ICodeRunner codeRunner = _codeRunnerFactory.CreateCodeRunner(codeInfo.Language);
 
-            // command
-            ProcessStartInfo startInfo = new(); 
-            startInfo.FileName = "ssh";
-            startInfo.Arguments = $"anirut@python-slave python sourcecode/py.py";
-
-            _allProcess
-                .NewProcess(connectionID, startInfo, output => { ProcessOutput(connectionID, output); })
-                .WaitForExit();
-
-            return Ok(new
-            {
-                connectionID,
-                codeInfo,
-            });
+            codeRunner.Execute(connectionID, codeInfo.Code, ch=>SendOutputTo(connectionID,ch), ch=>SendOutputTo(connectionID,ch));
+            return Ok();
         }
 
-        private void Savefile(string content, string file = "py.py")
-        {
-            try
-            {
-                // On docker
-                string path = $"""/sourcecodes/{file}""";
-                using StreamWriter writer = new(path); 
-                writer.Write(content);
-            }catch (Exception ex)
-            {
-                // On windows 
-                string path = $"""C:\Users\Anirut\Desktop\MyFnPj\CodeExecutorService\CompilerContainer\SourceCode\{file}""";
-                using StreamWriter writer = new(path); 
-                writer.Write(content);
-            }
+        private void SendOutputTo(string connectionID, char data)
+        { 
+            _hubContext.Clients.Client(connectionID).SendAsync("processoutput", $"{data}").Wait();
         }
-
-        public void ProcessOutput(string connectionID, string line) {
-            //Clients.Clients(connectionID).SendAsync("processoutput",line).Wait();
-            //Clients.All.SendAsync("processoutput", line).Wait();
-            Console.WriteLine($"send to {connectionID} : {line}");
-            _hubContext.Clients.Client(connectionID).SendAsync("processoutput",line);
-        }
-
-
     }
 }
