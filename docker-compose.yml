@@ -12,10 +12,18 @@ services:
     build:
       context: ./CompilerContainer
       dockerfile: Python.Dockerfile
-    ports:
-      - '2222:2222'
     volumes:
       - ./CompilerContainer/Keys:/config/.ssh
       - ./CompilerContainer/SourceCode:/config/sourcecode
     restart: always
-    
+   
+  java-slave:
+    image: java-slave
+    build:
+      context: ./CompilerContainer
+      dockerfile: Java.Dockerfile
+    volumes:
+      - ./CompilerContainer/Keys:/config/.ssh
+      - ./CompilerContainer/SourceCode:/config/sourcecode
+    restart: always
+       
