@@ -6,16 +6,60 @@ services:
     build:
       context: .
       dockerfile: CodeExecutorService/Dockerfile
+    environment:
+      SLAVE_USER_NAME: anirut
+      SLAVE_HOST_PYTHON: python-slave
+      SLAVE_HOST_JAVA: java-slave
+      SLAVE_HOST_SHELL: shell-slave
+      SLAVE_HOST_GCC: gcc-slave
 
   python-slave:
     image: python-slave
     build:
       context: ./CompilerContainer
       dockerfile: Python.Dockerfile
-    ports:
-      - '2222:2222'
+    environment:
+      USER_NAME: anirut
     volumes:
       - ./CompilerContainer/Keys:/config/.ssh
       - ./CompilerContainer/SourceCode:/config/sourcecode
     restart: always
     
+  java-slave:
+    image: java-slave
+    build:
+      context: ./CompilerContainer
+      dockerfile: Java.Dockerfile
+    environment:
+      USER_NAME: anirut
+    volumes:
+      - ./CompilerContainer/Keys:/config/.ssh
+      - ./CompilerContainer/SourceCode:/config/sourcecode
+    restart: always
+
+  shell-slave:
+   image: shell-slave
+   build:
+     context: ./CompilerContainer
+     dockerfile: Shell.Dockerfile
+   environment:
+     USER_NAME: anirut
+   volumes:
+     - ./CompilerContainer/Keys:/config/.ssh
+     - ./CompilerContainer/SourceCode:/config/sourcecode
+   restart: always
+      
+  gcc-slave:
+    image: gcc-slave
+    build:
+      context: ./CompilerContainer
+      dockerfile: GCC.Dockerfile
+    environment:
+      USER_NAME: anirut
+    ports:
+      - "2222:2222"
+    volumes:
+      - ./CompilerContainer/Keys:/config/.ssh
+      - ./CompilerContainer/SourceCode:/config/sourcecode
+    restart: always
+       

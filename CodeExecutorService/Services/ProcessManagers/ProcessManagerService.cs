@@ -1,17 +1,21 @@
-﻿using CodeExecutorService.Services.Interfaces;
+﻿using CodeExecutorService.Services.ProcessManagers.Interfaces;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace CodeExecutorService.Services.Implementation
+namespace CodeExecutorService.Services.ProcessManagers
 {
     public class ProcessManagerService : IProcessManagerService
     {
-        private readonly IDictionary<string,Process> _processes;
+        private readonly ILogger<ProcessManagerService> _logger;
 
-        public ProcessManagerService()
+        public ProcessManagerService(ILogger<ProcessManagerService> logger)
         {
-            _processes = new Dictionary<string,Process>();
+            _logger = logger;
+            _processes = new Dictionary<string, Process>();
         }
+
+        private readonly IDictionary<string, Process> _processes;
 
         public int CountProcesseses => _processes.Count;
 
@@ -24,7 +28,7 @@ namespace CodeExecutorService.Services.Implementation
             // Redirect the input, output, and error streams
             startInfo.RedirectStandardInput = true;
             startInfo.RedirectStandardOutput = true;
-            startInfo.RedirectStandardError = true; 
+            startInfo.RedirectStandardError = true;
 
             startInfo.UseShellExecute = false;
             startInfo.CreateNoWindow = true;
@@ -37,6 +41,7 @@ namespace CodeExecutorService.Services.Implementation
             process.StartInfo = startInfo;
 
             _processes.Add(processID, process);
+            _logger.LogInformation("Create new process ID : {}", processID);
         }
 
         public bool KillAllProcess()
@@ -45,6 +50,7 @@ namespace CodeExecutorService.Services.Implementation
             {
                 process.Close();
                 _processes.Remove(processID);
+                _logger.LogInformation("Kill process ID : {}", processID);
             }
             return true;
         }
@@ -54,23 +60,26 @@ namespace CodeExecutorService.Services.Implementation
             if (!_processes.ContainsKey(processID))
                 return false;
 
-            _processes[processID].Close();
+            _processes.TryGetValue(processID, out Process? process);
+            process?.Kill();
             _processes.Remove(processID);
+            _logger.LogInformation("Kill process ID : {}", processID);
             return true;
         }
 
         public void StartProcess(string processID, Action<char>? onOutput = null, Action<char>? onError = null, Action<StreamWriter>? sendInput = null)
         {
-            bool processIsNull = ! _processes.TryGetValue(processID, out Process? process); 
+            bool processIsNull = !_processes.TryGetValue(processID, out Process? process);
             if (processIsNull)
-                return; 
+                return;
 
             process!.Start();
+            _logger.LogInformation("Start process ID : {}", processID);
 
             StreamReader outputReader = process.StandardOutput;
             StreamReader errorReader = process.StandardError;
 
-            Thread outputThread = new (() =>
+            Thread outputThread = new(() =>
             {
                 while (!outputReader.EndOfStream)
                 {
@@ -80,7 +89,7 @@ namespace CodeExecutorService.Services.Implementation
             });
             outputThread.Start();
 
-            Thread errorThread = new (() =>
+            Thread errorThread = new(() =>
             {
                 while (!errorReader.EndOfStream)
                 {
@@ -101,14 +110,10 @@ namespace CodeExecutorService.Services.Implementation
             KillProcess(processID);
         }
 
-        public void WritLineToProcess(string processID, string line)
+        public void WriteLineToProcess(string processID, string line)
         {
-            bool processIsReady =  _processes.TryGetValue(processID, out Process? process); 
-            if (processIsReady)
-                return; 
-
-            process!.StandardInput.WriteLine(line);
-
+            _processes.TryGetValue(processID, out Process? process);
+            process?.StandardInput.WriteLine(line);
         }
     }
 }

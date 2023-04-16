@@ -1,5 +1,10 @@
 using CodeExecutorService.Hubs;
-using CodeExecutorService.SubProcess;
+using CodeExecutorService.Services.CodeRunners;
+using CodeExecutorService.Services.CodeRunners.Interfaces;
+using CodeExecutorService.Services.FileSavers;
+using CodeExecutorService.Services.FileSavers.Interfaces;
+using CodeExecutorService.Services.ProcessManagers;
+using CodeExecutorService.Services.ProcessManagers.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +17,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 
 // Add my Service
-builder.Services.AddSingleton(SubProcessIOHandelService.Instance);
+builder.Services.AddSingleton<IProcessManagerService,ProcessManagerService>();
+
+// Add my Factoris
+builder.Services.AddSingleton<IFileSaverFactory,FileSaverFactory>();
+builder.Services.AddSingleton<ICodeRunnerFactory,CodeRunnerFactory>();
 
 // Add dev Cors
 builder.Services.AddCors(options => options

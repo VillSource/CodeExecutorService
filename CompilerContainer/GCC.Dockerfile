@@ -8,7 +8,7 @@ ENV SUDO_ACCESS=true
 
 RUN mkdir /config/sourcecode
 
-ENV PYTHONUNBUFFERED=1
-RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
-RUN python3 -m ensurepip
-RUN pip3 install --no-cache --upgrade pip setuptools 
+RUN apk update && \
+    apk add --no-cache gcc make musl-dev linux-headers libgcc g++ libc-dev
+
+WORKDIR /config/sourcecode
