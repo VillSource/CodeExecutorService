@@ -1,4 +1,5 @@
-﻿using CodeExecutorService.Services.CodeRunners.Interfaces;
+﻿using CodeExecutorService.Constants;
+using CodeExecutorService.Services.CodeRunners.Interfaces;
 using CodeExecutorService.Services.FileSavers.Interfaces;
 using CodeExecutorService.Services.ProcessManagers.Interfaces;
 using System.Diagnostics;
@@ -12,8 +13,12 @@ namespace CodeExecutorService.Services.CodeRunners
         private readonly IFileSaver _fileSaver;
 
         private static readonly string _workingDir = "/config/sourcecode";
-        private static readonly string _remoteUsername = "anirut";
-        private static readonly string _serverName = "java-slave";
+        private static readonly string _remoteUsername
+             = Environment.GetEnvironmentVariable(SLAVE_ENV.USER_NAME)
+            ?? "anirut";
+        private static readonly string _serverName 
+             = Environment.GetEnvironmentVariable(SLAVE_ENV.JAVA_HOST)
+            ?? string.Empty;
 
         public JavaRunner(IFileSaverFactory fileSaverFactory, IProcessManagerService processManagerService)
         {
@@ -29,7 +34,7 @@ namespace CodeExecutorService.Services.CodeRunners
             ProcessStartInfo startInfo = new()
             {
                 FileName = "ssh",
-                Arguments = $"{_remoteUsername}@{_serverName} /opt/jdk-17.0.6+10/bin/java {Path.Join(_workingDir,name)}"
+                Arguments = $"-q {_remoteUsername}@{_serverName} /opt/jdk-17.0.6+10/bin/java {Path.Join(_workingDir,name)}"
             };
 
             _processManagerService.AddNewProcess(IOconnectionID, startInfo);
