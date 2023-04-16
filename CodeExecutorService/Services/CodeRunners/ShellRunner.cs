@@ -1,4 +1,5 @@
-﻿using CodeExecutorService.Services.CodeRunners.Interfaces;
+﻿using CodeExecutorService.Constants;
+using CodeExecutorService.Services.CodeRunners.Interfaces;
 using CodeExecutorService.Services.FileSavers.Interfaces;
 using CodeExecutorService.Services.ProcessManagers.Interfaces;
 using System.Diagnostics;
@@ -12,8 +13,13 @@ namespace CodeExecutorService.Services.CodeRunners
         private readonly IFileSaver _fileSaver;
 
         private static readonly string _workingDir = "/config/sourcecode";
-        private static readonly string _remoteUsername = "anirut";
-        private static readonly string _serverName = "python-slave";
+        private static readonly string _remoteUsername
+             = Environment.GetEnvironmentVariable(SLAVE_ENV.USER_NAME)
+            ?? "anirut";
+        private static readonly string _serverName 
+             = Environment.GetEnvironmentVariable(SLAVE_ENV.SHELL_HOST)
+            ?? string.Empty;
+
 
         public ShellRunner(IFileSaverFactory fileSaverFactory, IProcessManagerService processManagerService)
         {
@@ -30,7 +36,7 @@ namespace CodeExecutorService.Services.CodeRunners
             ProcessStartInfo startInfo = new()
             {
                 FileName = "ssh",
-                Arguments = $"{_remoteUsername}@{_serverName} /config/sourcecode/run.sh {name}"
+                Arguments = $" -q {_remoteUsername}@{_serverName} /run.sh {name}"
             };
 
             _processManagerService.AddNewProcess(IOconnectionID, startInfo);

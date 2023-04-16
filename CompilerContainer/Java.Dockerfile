@@ -7,7 +7,6 @@ ENV PUID=1000
 ENV PGID=1000
 ENV TZ=Etc/UTC
 ENV SUDO_ACCESS=true
-ENV USER_NAME=anirut
 
 RUN mkdir /config/sourcecode
 
